@@ -1,0 +1,3 @@
+[submodule "vendor/syrup-buffer"]
+	path = vendor/syrup-buffer
+	url = git@github.com:kildevaeld/syrup-buffer
