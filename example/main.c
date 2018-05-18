@@ -42,11 +42,13 @@ int main() {
     sleep_ms(1000 / 60);
   }
 
-  sy_term_cursor_down(1);
-  sy_term_cursor_tostart();
-  write(STDOUT_FILENO, "Hello", 5);
+  sy_term_cursor_buf_down(buf, 1);
+  sy_term_cursor_buf_tostart(buf);
+  sy_buffer_append_str(buf, "Hello, you beautiful bastard!");
+  sy_term_cursor_buf_show(buf);
+  sy_buffer_write(buf, STDOUT_FILENO);
 
-  sy_term_cursor_show();
+  sy_buffer_free(buf);
 
   return 0;
 }
