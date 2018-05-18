@@ -178,7 +178,7 @@ void sy_term_cursor_forward(int n) { SY_WRITE(ESCAPE("%dC"), n); }
 void sy_term_cursor_backward(int n) { SY_WRITE(ESCAPE("%dD"), n); }
 void sy_term_erase_line() { write(STDOUT_FILENO, ESCAPE("K"), 3); }
 void sy_term_erase_current_line() { write(STDOUT_FILENO, ESCAPE("2K"), 4); }
-
+void sy_term_cursor_tostart() { write(STDOUT_FILENO, "\r", 1); }
 void sy_term_cursor_show() { write(STDOUT_FILENO, "\x1b[?25h", 6); }
 void sy_term_cursor_hide() { write(STDOUT_FILENO, "\x1b[?25l", 6); }
 
@@ -186,6 +186,10 @@ void sy_term_cursor_hide() { write(STDOUT_FILENO, "\x1b[?25l", 6); }
   do {                                                                         \
     sy_buffer_append_str_fmt(buffer, fmt, __VA_ARGS__);                        \
   } while (0)
+
+void sy_term_clear_screen_buf(sy_buffer_t *buffer) {
+  SY_WRITE2("%s", ESCAPE("2J"));
+}
 
 void sy_term_cursor_buf_pos_set(sy_buffer_t *buffer, int row, int col) {
   sy_buffer_append_str_fmt(buffer, ESCAPE("%d;%dH"), row + 1, col + 1);
@@ -206,5 +210,10 @@ void sy_term_buf_erase_line(sy_buffer_t *buffer) { SY_WRITE2(ESCAPE("K"), 3); }
 void sy_term_buf_erase_current_line(sy_buffer_t *buffer) {
   SY_WRITE2(ESCAPE("2K"), 4);
 }
+
+void sy_term_cursor_buf_tostart(sy_buffer_t *buffer) {
+  sy_buffer_append_char(buffer, '\r');
+}
+
 void sy_term_cursor_buf_show(sy_buffer_t *buffer) { SY_WRITE2("\x1b[?25h", 6); }
 void sy_term_cursor_buf_hide(sy_buffer_t *buffer) { SY_WRITE2("\x1b[?25l", 6); }
