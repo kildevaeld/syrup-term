@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#define CS_CTRL_KEY(k) ((k)&0x1f)
+#define SY_CTRL_KEY(k) ((k)&0x1f)
 
 enum type_term_control_keys_t {
   SY_ENTER_KEY = 13,

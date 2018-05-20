@@ -1,4 +1,5 @@
 #include <syrup/buffer.h>
+#include <syrup/form.h>
 #include <syrup/term.h>
 #ifdef WIN32
 #include <windows.h>
@@ -7,6 +8,8 @@
 #else
 #include <unistd.h> // for usleep
 #endif
+
+#include <syrup/colors.h>
 
 void sleep_ms(int milliseconds) // cross-platform sleep function
 {
@@ -24,7 +27,7 @@ void sleep_ms(int milliseconds) // cross-platform sleep function
 
 int main() {
 
-  sy_term_cursor_hide();
+  /*sy_term_cursor_hide();
   sy_buffer_t *buf = sy_buffer_alloc();
 
   int rows, cols;
@@ -44,11 +47,19 @@ int main() {
 
   sy_term_cursor_buf_down(buf, 1);
   sy_term_cursor_buf_tostart(buf);
+  sy_term_color(buf, SY_BACKGROUND | SY_CYAN);
   sy_buffer_append_str(buf, "Hello, you beautiful bastard!");
+  sy_term_color_reset(buf);
   sy_term_cursor_buf_show(buf);
-  sy_buffer_write(buf, STDOUT_FILENO);
 
-  sy_buffer_free(buf);
+  sy_buffer_write(buf, STDOUT_FILENO);
+  sy_term_cursor_buf_tostart(buf);
+
+  sy_buffer_free(buf);*/
+
+  sy_term_style_t style;
+
+  sy_term_form_prompt(&style, "Name:");
 
   return 0;
 }
