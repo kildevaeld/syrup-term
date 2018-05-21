@@ -58,8 +58,9 @@ int main() {
   sy_buffer_free(buf);*/
 
   sy_term_style_t style;
-
+  char *choices[] = {"test", "mig"};
   sy_term_form_prompt(&style, "Name:");
-
+  sy_term_form_confirm(&style, "Yes", false);
+  sy_term_form_list(&style, "Hello:", choices, 2);
   return 0;
 }
