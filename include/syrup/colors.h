@@ -1,6 +1,10 @@
 #pragma once
 #include <syrup/buffer.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum sy_term_colors {
   SY_BLACK = 1 << 0,
   SY_RED = 1 << 2,
@@ -19,3 +23,7 @@ enum sy_term_colors {
 
 void sy_term_color(sy_buffer_t *buffer, enum sy_term_colors c);
 void sy_term_color_reset(sy_buffer_t *buffer);
+
+#ifdef __cplusplus
+}
+#endif
