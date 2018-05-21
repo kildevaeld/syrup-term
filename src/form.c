@@ -2,7 +2,7 @@
 #include <syrup/form.h>
 #include <syrup/term.h>
 
-void print_input(sy_buffer_t *str, int row, int col) {
+void print_input(sy_term_style_t *style, sy_buffer_t *str, int row, int col) {
   sy_term_erase_current_line();
   sy_term_cursor_tostart(str);
   /*char buf[cs_str_len(str) + 1];
@@ -14,10 +14,115 @@ void print_input(sy_buffer_t *str, int row, int col) {
   sy_term_cursor_pos_set(row, col);
 }
 
+static int print_line(const char *msg, bool highlight) {
+  int len = strlen(msg) + 20;
+  char buf[len];
+  if (!highlight)
+    snprintf(buf, len, "%s\r", msg);
+  else
+    snprintf(buf, len, "\x1b[7m%s\x1b[0m\r", msg);
+  write(STDOUT_FILENO, buf, strlen(buf));
+}
+
 size_t sy_term_form_list(sy_term_style_t *style, const char *msg,
-                         const char **choices, size_t size) {}
+                         const char **choices, size_t len) {
+  sy_term_enable_raw_mode();
+
+  char buf[strlen(msg) + 3];
+  snprintf(buf, strlen(msg) + 3, "%s\r\n", msg);
+  write(STDOUT_FILENO, buf, strlen(buf));
+  for (int i = 0; i < len; i++) {
+    print_line(choices[i], i == 0);
+    write(STDOUT_FILENO, "\n", 1);
+  }
+  sy_term_cursor_up(len);
+  int i = 0;
+  while (1) {
+    int c = sy_term_read_key();
+    switch (c) {
+    case SY_CTRL_KEY('c'):
+      i = -1;
+      goto end;
+    case SY_ARROW_DOWN:
+      if (i >= len - 1)
+        break;
+      sy_term_erase_line();
+      print_line(choices[i], 0);
+
+      sy_term_cursor_down(1);
+      print_line(choices[++i], 1);
+      break;
+    case SY_ARROW_UP:
+      if (i == 0)
+        break;
+      sy_term_erase_line();
+      print_line(choices[i], 0);
+
+      sy_term_cursor_up(1);
+      print_line(choices[--i], 1);
+
+      break;
+    case SY_ENTER_KEY:
+      goto end;
+    }
+  }
+
+end:
+
+  do {
+    int diff = len - i;
+    int l = len;
+    sy_term_cursor_down(diff);
+    while (len--) {
+      sy_term_erase_line();
+      sy_term_cursor_up(1);
+    }
+  } while (0);
+
+  sy_term_cursor_up(1);
+  int slen = strlen(msg) + 1 + strlen(choices[i]) + 4;
+  char sbuf[slen];
+  snprintf(sbuf, slen, "%s %s\r\n", msg, choices[i]);
+  write(STDOUT_FILENO, sbuf, strlen(sbuf));
+  sy_term_disable_raw_mode();
+  return i;
+}
 
 bool sy_term_form_confirm(sy_term_style_t *style, const char *msg, bool clear) {
+  sy_term_enable_raw_mode();
+
+  char buf[strlen(msg) + 3];
+  snprintf(buf, strlen(msg) + 3, "%s ", msg);
+  write(STDOUT_FILENO, buf, strlen(buf));
+  bool ret = false;
+  char *result = NULL;
+  while (1) {
+    int c = sy_term_read_key();
+
+    switch (c) {
+    case 'j':
+    case 'y':
+      ret = true;
+      result = "yes\r\n";
+      goto end;
+    case 'n':
+      result = "no\r\n";
+      goto end;
+    }
+  }
+
+end:
+
+  if (clear) {
+    sy_term_erase_current_line();
+    write(STDOUT_FILENO, "\r", 1);
+  } else {
+    write(STDOUT_FILENO, result, strlen(result));
+  }
+
+  sy_term_disable_raw_mode();
+
+  return ret;
 }
 
 /*static void read_n(char *buf, int c) {
@@ -48,7 +153,7 @@ char *sy_term_form_prompt(sy_term_style_t *style, const char *msg) {
   int row, col;
   sy_term_cursor_pos_get(&row, &col);
 
-  print_input(str, row, msg_l);
+  print_input(style, str, row, msg_l);
 
   int idx = msg_l + 1;
   int cur = idx;
@@ -76,7 +181,7 @@ char *sy_term_form_prompt(sy_term_style_t *style, const char *msg) {
       cur--;
 
       sy_buffer_utf8_remove(str, cur - 1, 1);
-      print_input(str, row, cur - 1);
+      print_input(style, str, row, cur - 1);
 
       break;
     case SY_ENTER_KEY:
@@ -99,7 +204,7 @@ char *sy_term_form_prompt(sy_term_style_t *style, const char *msg) {
         sy_buffer_utf8_insert_char(str, cur - 1, key);
       }
 
-      print_input(str, row, cur);
+      print_input(style, str, row, cur);
       cur++;
     }
     }
