@@ -9,6 +9,8 @@ find_package(syrup-buffer REQUIRED)
 
 add_subdirectory(src)
 
+include_directories(include ${SYRUP_BUFFER_INCLUDE_DIRS})
+
 if(SYRUP_BUILD_EXAMPLE)
     add_subdirectory(example)
 endif(SYRUP_BUILD_EXAMPLE)
