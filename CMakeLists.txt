@@ -3,15 +3,12 @@ project(syrup-term)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-option(SYRUP_BUILD_TEST "build tests" off)
+option(SYRUP_BUILD_EXAMPLE "build example" off)
 
 find_package(syrup-buffer REQUIRED)
 
-
-#include_directories(include vendor/syrup-buffer/include)
-
-
-#add_subdirectory(vendor/syrup-buffer)
 add_subdirectory(src)
 
-add_subdirectory(example)
+if(SYRUP_BUILD_EXAMPLE)
+    add_subdirectory(example)
+endif(SYRUP_BUILD_EXAMPLE)
