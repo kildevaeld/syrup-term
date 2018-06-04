@@ -2,7 +2,7 @@
 
 void sy_term_color(sy_buffer_t *buffer, enum sy_term_colors c) {
 
-  sy_buffer_append(buffer, "\x1b[", 3);
+  sy_buffer_append(buffer, (const unsigned char *)"\x1b[", 3);
 
   if ((c & SY_BOLD) == SY_BOLD) {
     sy_buffer_append_char(buffer, '1');
@@ -44,5 +44,5 @@ void sy_term_color(sy_buffer_t *buffer, enum sy_term_colors c) {
 }
 
 void sy_term_color_reset(sy_buffer_t *buffer) {
-  sy_buffer_append(buffer, "\x1b[0m", 5);
+  sy_buffer_append(buffer, (const unsigned char *)"\x1b[0m", 5);
 }

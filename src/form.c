@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <syrup/buffer.h>
 #include <syrup/form.h>
 #include <syrup/term.h>
