@@ -3,16 +3,49 @@
 #include <syrup/form.h>
 #include <syrup/term.h>
 
-void print_input(sy_term_style_t *style, sy_buffer_t *str, int row, int col) {
-  sy_term_erase_current_line();
-  sy_term_cursor_tostart(str);
-  /*char buf[sy_buffer_len(str) + 1];
-  buf[0] = '\r';
-  sy_buffer_copy(str, buf + 1);
-  write(STDOUT_FILENO, buf, sy_buffer_len(str) + 1);*/
+static void print_input(sy_buffer_t *buf, sy_term_style_t *style, const char *m,
+                        sy_buffer_t *str, int row, int col) {
 
-  sy_buffer_write(str, STDOUT_FILENO);
-  sy_term_cursor_pos_set(row, col);
+  sy_buffer_clear(buf);
+  // sy_buffer_t *buf = sy_buffer_alloc();
+  sy_term_buf_erase_current_line(buf);
+  sy_term_cursor_buf_tostart(buf);
+  if (style->normal)
+    sy_term_color(buf, style->normal);
+  sy_buffer_utf8_append(buf, m);
+  sy_buffer_append_char(buf, ' ');
+  if (style->normal)
+    sy_term_color_reset(buf);
+  if (style->input)
+    sy_term_color(buf, style->input);
+  sy_buffer_append_buffer(buf, str);
+  if (style->input)
+    sy_term_color_reset(buf);
+  sy_term_cursor_buf_pos_set(buf, row,
+                             strlen(m) + sy_buffer_utf8_len(str) + 1 + col);
+  sy_buffer_write(buf, STDOUT_FILENO);
+}
+
+static void print_result(sy_buffer_t *buf, sy_term_style_t *style,
+                         const char *m, sy_buffer_t *str) {
+  sy_buffer_clear(buf);
+  // sy_buffer_t *buf = sy_buffer_alloc();
+  sy_term_buf_erase_current_line(buf);
+  sy_term_cursor_buf_tostart(buf);
+  if (style->normal)
+    sy_term_color(buf, style->normal);
+  sy_buffer_utf8_append(buf, m);
+  sy_buffer_append_char(buf, ' ');
+  if (style->normal)
+    sy_term_color_reset(buf);
+  if (style->value)
+    sy_term_color(buf, style->value);
+  sy_buffer_append_buffer(buf, str);
+  if (style->value)
+    sy_term_color_reset(buf);
+  sy_buffer_append(buf, "\n\r", 2);
+
+  sy_buffer_write(buf, STDOUT_FILENO);
 }
 
 static int print_line(const char *msg, bool highlight) {
@@ -128,13 +161,6 @@ end:
   return ret;
 }
 
-/*static void read_n(char *buf, int c) {
-  int i = 0;
-  while (i < c) {
-    buf[i++] = sy_term_read_key();
-  }
-}*/
-
 static int utf_width(char c) {
   if (SY_IS_UTF8_2C(c))
     return 2;
@@ -151,15 +177,14 @@ char *sy_term_form_prompt(sy_term_style_t *style, const char *msg) {
   size_t msg_l = strlen(msg) + 1;
 
   sy_buffer_t *str = sy_buffer_alloc();
-  sy_buffer_utf8_appendf(str, "%s ", msg);
+  sy_buffer_t *buffer = sy_buffer_alloc();
 
   int row, col;
   sy_term_cursor_pos_get(&row, &col);
 
-  print_input(style, str, row, msg_l);
+  print_input(buffer, style, msg, str, row, 0);
 
-  int idx = msg_l + 1;
-  int cur = idx;
+  int index = 0;
   while (1) {
     int key = sy_term_read_key();
 
@@ -167,28 +192,26 @@ char *sy_term_form_prompt(sy_term_style_t *style, const char *msg) {
     case SY_CTRL_KEY('c'):
       goto end;
     case SY_ARROW_LEFT:
-      if (idx == cur)
+      if (index == 0)
         break;
-      cur--;
+      index--;
       sy_term_cursor_backward(1);
       break;
     case SY_ARROW_RIGHT:
-      if (cur > sy_buffer_utf8_len(str))
+      if (index > sy_buffer_utf8_len(str))
         break;
-      cur++;
+      index++;
       sy_term_cursor_forward(1);
       break;
     case SY_BACKSPACE:
-      if (cur <= idx)
+      if (index <= 0)
         break;
-      cur--;
-
-      sy_buffer_utf8_remove(str, cur - 1, 1);
-      print_input(style, str, row, cur - 1);
-
+      index--;
+      sy_buffer_utf8_remove(str, index, 1);
+      print_input(buffer, style, msg, str, row, 0);
       break;
     case SY_ENTER_KEY:
-      write(STDOUT_FILENO, "\n\r", 2);
+      // write(STDOUT_FILENO, "\n\r", 2);
       goto end;
     case SY_ARROW_DOWN:
     case SY_ARROW_UP:
@@ -201,23 +224,23 @@ char *sy_term_form_prompt(sy_term_style_t *style, const char *msg) {
         buf[0] = key;
         sy_term_nread_key(buf + 1, ul - 1);
         buf[ul] = '\0';
-        sy_buffer_utf8_insert(str, cur - 1, buf);
+        sy_buffer_utf8_insert(str, index, buf);
 
       } else {
-        sy_buffer_utf8_insert_char(str, cur - 1, key);
+        sy_buffer_utf8_insert_char(str, index, key);
       }
-
-      print_input(style, str, row, cur);
-      cur++;
+      print_input(buffer, style, msg, str, row, 0);
+      index++;
     }
     }
   }
 
 end:
+  print_result(buffer, style, msg, str);
   sy_term_disable_raw_mode();
-  sy_buffer_remove(str, 0, msg_l - 1);
   char *out = sy_buffer_string(str);
   sy_buffer_free(str);
+  sy_buffer_free(buffer);
   return out;
 }
 
@@ -225,18 +248,16 @@ char *sy_term_form_password(sy_term_style_t *style, const char *msg,
                             const char *sub) {
   sy_term_enable_raw_mode();
 
-  size_t msg_l = strlen(msg) + 2;
+  size_t msg_l = strlen(msg) + 1;
 
   sy_buffer_t *str = sy_buffer_alloc();
-  sy_buffer_utf8_appendf(str, "%s ", msg);
-
+  sy_buffer_t *buffer = sy_buffer_alloc();
   int row, col;
   sy_term_cursor_pos_get(&row, &col);
 
-  print_input(style, str, row, msg_l - 1);
+  print_input(buffer, style, msg, str, row, 0);
 
-  int idx = msg_l;
-  int cur = idx;
+  int index = 0;
   while (1) {
     int key = sy_term_read_key();
 
@@ -244,22 +265,23 @@ char *sy_term_form_password(sy_term_style_t *style, const char *msg,
     case SY_CTRL_KEY('c'):
       goto end;
     case SY_ARROW_LEFT:
-      if (idx == cur)
+      if (index == 0)
         break;
-      cur--;
+      index--;
       sy_term_cursor_backward(1);
       break;
     case SY_ARROW_RIGHT:
-      if (cur > sy_buffer_utf8_len(str))
+      if (index > sy_buffer_utf8_len(str))
         break;
-      cur++;
+      index++;
       sy_term_cursor_forward(1);
       break;
     case SY_BACKSPACE:
-      if (cur <= idx)
+      if (index <= 0)
         break;
-      cur--;
-      sy_buffer_utf8_remove(str, cur - 1, 1);
+      index--;
+      sy_buffer_utf8_remove(str, index, 1);
+      // print_input(style, msg, str, row, 0);
       break;
     case SY_ENTER_KEY:
       write(STDOUT_FILENO, "\n\r", 2);
@@ -275,22 +297,21 @@ char *sy_term_form_password(sy_term_style_t *style, const char *msg,
         buf[0] = key;
         sy_term_nread_key(buf + 1, ul - 1);
         buf[ul] = '\0';
-        sy_buffer_utf8_insert(str, cur - 1, buf);
+        sy_buffer_utf8_insert(str, index, buf);
 
       } else {
-        sy_buffer_utf8_insert_char(str, cur - 1, key);
+        sy_buffer_utf8_insert_char(str, index, key);
       }
-
-      // print_input(str, row, cur);
-      cur++;
+      // print_input(style, msg, str, row, 0);
+      index++;
     }
     }
   }
 
 end:
   sy_term_disable_raw_mode();
-  sy_buffer_remove(str, 0, msg_l - 1);
   char *out = sy_buffer_string(str);
   sy_buffer_free(str);
+  sy_buffer_free(buffer);
   return out;
 }

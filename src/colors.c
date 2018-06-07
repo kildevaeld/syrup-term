@@ -1,6 +1,9 @@
 #include <syrup/colors.h>
 
-void sy_term_color(sy_buffer_t *buffer, enum sy_term_colors c) {
+void sy_term_color(sy_buffer_t *buffer, sy_term_attr_t c) {
+
+  if (c == 0)
+    return;
 
   sy_buffer_append(buffer, (const unsigned char *)"\x1b[", 3);
 

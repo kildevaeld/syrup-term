@@ -57,8 +57,11 @@ int main() {
 
   sy_buffer_free(buf);*/
 
-  sy_term_style_t style;
+  sy_term_style_t style = {.normal = SY_RED, .input = SY_CYAN};
+
   char *choices[] = {"test", "mig"};
+  sy_term_form_password(&style, "Pasword:", "*");
+
   sy_term_form_prompt(&style, "Name:");
   sy_term_form_confirm(&style, "Yes", false);
   sy_term_form_list(&style, "Hello:", choices, 2);

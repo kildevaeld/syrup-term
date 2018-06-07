@@ -3,6 +3,7 @@ set(SOURCES
     term.c
     colors.c
     form.c
+    input.c
 )
 
 add_library(syrup-term ${SOURCES})
