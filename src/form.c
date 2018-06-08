@@ -124,8 +124,8 @@ end:
   return i;
 }
 
-bool sy_term_form_confirm(sy_term_style_t *style, const char *msg, bool clear) {
-  sy_term_enable_raw_mode();
+/*bool sy_term_form_confirm(sy_term_style_t *style, const char *msg, bool clear)
+{ sy_term_enable_raw_mode();
 
   char buf[strlen(msg) + 3];
   snprintf(buf, strlen(msg) + 3, "%s ", msg);
@@ -159,7 +159,7 @@ end:
   sy_term_disable_raw_mode();
 
   return ret;
-}
+}*/
 
 static int utf_width(char c) {
   if (SY_IS_UTF8_2C(c))

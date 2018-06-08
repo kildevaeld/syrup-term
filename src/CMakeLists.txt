@@ -4,6 +4,9 @@ set(SOURCES
     colors.c
     form.c
     input.c
+    line-edit.c
+    list-edit.c
+    confirm.c
 )
 
 add_library(syrup-term ${SOURCES})

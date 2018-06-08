@@ -1,6 +1,9 @@
 #include <syrup/buffer.h>
 #include <syrup/form.h>
+#include <syrup/line-edit.h>
+#include <syrup/list-edit.h>
 #include <syrup/term.h>
+
 #ifdef WIN32
 #include <windows.h>
 #elif _POSIX_C_SOURCE >= 199309L
@@ -57,13 +60,44 @@ int main() {
 
   sy_buffer_free(buf);*/
 
-  sy_term_style_t style = {.normal = SY_RED, .input = SY_CYAN};
+  /*sy_term_style_t style = {.normal = SY_RED, .input = SY_CYAN};
 
   char *choices[] = {"test", "mig"};
   sy_term_form_password(&style, "Pasword:", "*");
 
   sy_term_form_prompt(&style, "Name:");
   sy_term_form_confirm(&style, "Yes", false);
-  sy_term_form_list(&style, "Hello:", choices, 2);
+  sy_term_form_list(&style, "Hello:", choices, 2);*/
+
+  sy_term_style_t style = {.normal = SY_WHITE,
+                           .input = SY_YELLOW,
+                           .value = SY_CYAN | SY_HIGHDENS,
+                           .muted = SY_GREEN};
+
+  /*sy_term_form_input_cfg input_cfg = {.msg = "Name",
+                                      .style = &style,
+                                      //.defaults = "rasmus",
+                                      .required = true,
+                                      .echo = true,
+                                      .clear = false};
+
+  char *pass = sy_term_form_input(&input_cfg);
+  printf("pass %s\n", pass);
+
+  sy_term_form_confirm_cfg confirm_cfg = {.msg = "Name",
+                                          .style = &style,
+                                          //.defaults = "rasmus",
+                                          .required = true,
+                                          .clear = false};
+
+  bool confirm = sy_term_form_confirm(&confirm_cfg);*/
+
+  sy_list_edit_t cfg;
+
+  char *choices[] = {"Hello", "World", "Med"};
+  sy_term_list_edit_init(&cfg);
+  cfg.highlight = SY_MAGENTA;
+  sy_term_list_edit_read(&cfg, choices, 3);
+
   return 0;
 }

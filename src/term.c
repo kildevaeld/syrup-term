@@ -11,6 +11,8 @@
 #define ESCAPE_CHARACTER '\x1b'
 #define ESCAPE(x) ("\x1b[" x)
 
+int _refcount = 0;
+
 struct Terminal {
   struct termios orig_termios;
   int cx;
@@ -22,10 +24,22 @@ struct Terminal T;
 struct termios orig_termios;
 
 bool sy_term_disable_raw_mode() {
-  return tcsetattr(STDIN_FILENO, TCSAFLUSH, &T.orig_termios) == -1;
+  bool ret = false;
+  if (_refcount == 1) {
+    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &T.orig_termios) == -1;
+    // printf("disable\n");
+  } else if (_refcount == 0) {
+    return true;
+  }
+  _refcount--;
+  return ret;
 }
 
 bool sy_term_enable_raw_mode() {
+  if (_refcount > 0) {
+    _refcount++;
+    return true;
+  }
   if (tcgetattr(STDIN_FILENO, &T.orig_termios) == -1)
     return false;
   atexit((void (*)(void))sy_term_disable_raw_mode);
@@ -37,8 +51,10 @@ bool sy_term_enable_raw_mode() {
   raw.c_lflag &= ~(ECHO | ICANON | IEXTEN);
   raw.c_cc[VMIN] = 0;
   raw.c_cc[VTIME] = 1;
+  // printf("enable\n");
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
     return false;
+  _refcount++;
   return true;
 }
 
@@ -168,7 +184,7 @@ int sy_term_size(int *rows, int *cols) {
 
 void sy_term_cursor_pos_set(int row, int col) {
   char buf[32];
-  snprintf(buf, sizeof(buf), ESCAPE("%d;%dH"), row + 1, col + 1);
+  snprintf(buf, sizeof(buf), ESCAPE("%d;%dH"), row, col);
   write(STDIN_FILENO, buf, strlen(buf));
 }
 
@@ -192,7 +208,7 @@ void sy_term_clear_screen_buf(sy_buffer_t *buffer) {
 }
 
 void sy_term_cursor_buf_pos_set(sy_buffer_t *buffer, int row, int col) {
-  sy_buffer_append_str_fmt(buffer, ESCAPE("%d;%dH"), row + 1, col + 1);
+  sy_buffer_append_str_fmt(buffer, ESCAPE("%d;%dH"), row, col);
 }
 void sy_term_cursor_buf_up(sy_buffer_t *buffer, int n) {
   SY_WRITE2(ESCAPE("%dA"), n);

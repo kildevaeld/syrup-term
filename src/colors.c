@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <syrup/colors.h>
 
 void sy_term_color(sy_buffer_t *buffer, sy_term_attr_t c) {
@@ -35,7 +36,7 @@ void sy_term_color(sy_buffer_t *buffer, sy_term_attr_t c) {
     sy_buffer_append_char(buffer, '3');
   } else if ((c & SY_BLUE) == SY_BLUE) {
     sy_buffer_append_char(buffer, '4');
-  } else if ((c & SY_PURPLE) == SY_PURPLE) {
+  } else if ((c & SY_MAGENTA) == SY_MAGENTA) {
     sy_buffer_append_char(buffer, '5');
   } else if ((c & SY_CYAN) == SY_CYAN) {
     sy_buffer_append_char(buffer, '6');
@@ -48,4 +49,28 @@ void sy_term_color(sy_buffer_t *buffer, sy_term_attr_t c) {
 
 void sy_term_color_reset(sy_buffer_t *buffer) {
   sy_buffer_append(buffer, (const unsigned char *)"\x1b[0m", 5);
+}
+
+void sy_term_color_append(sy_buffer_t *buffer, sy_term_attr_t c,
+                          const char *msg) {
+  sy_term_color(buffer, c);
+  sy_buffer_append_str(buffer, msg);
+  if (c != 0)
+    sy_term_color_reset(buffer);
+}
+
+void sy_term_color_appendf(sy_buffer_t *buffer, sy_term_attr_t c,
+                           const char *fmt, ...) {
+  sy_term_color(buffer, c);
+  va_list args;
+  va_start(args, fmt);
+  char *out;
+  if (vasprintf(&out, fmt, args) == -1) {
+    return;
+  }
+  va_end(args);
+  sy_buffer_utf8_append(buffer, out);
+  free(out);
+  if (c != 0)
+    sy_term_color_reset(buffer);
 }
