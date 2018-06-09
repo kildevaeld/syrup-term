@@ -9,6 +9,11 @@ typedef struct sy_list_edit_t {
   int col;
   int max_height;
   sy_term_attr_t highlight;
+  int max_select;
+  int min_select;
+  char selected;
+  char unselected;
+
 } sy_list_edit_t;
 
 void sy_term_list_edit_init(sy_list_edit_t *le);

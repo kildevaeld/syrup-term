@@ -7,6 +7,7 @@ set(SOURCES
     line-edit.c
     list-edit.c
     confirm.c
+    array-list.c
 )
 
 add_library(syrup-term ${SOURCES})

@@ -94,10 +94,20 @@ int main() {
 
   sy_list_edit_t cfg;
 
-  char *choices[] = {"Hello", "World", "Med"};
+  char *choices[20];
+  sy_buffer_t *buf = sy_buffer_alloc();
+  for (int i = 0; i < 20; i++) {
+    sy_buffer_clear(buf);
+    sy_buffer_utf8_appendf(buf, "item %i", i);
+    choices[i] = sy_buffer_string(buf);
+  }
   sy_term_list_edit_init(&cfg);
   cfg.highlight = SY_MAGENTA;
-  sy_term_list_edit_read(&cfg, choices, 3);
+  cfg.selected = 'v';
+  cfg.unselected = 'x';
+  cfg.max_select = 2;
+  cfg.min_select = 1;
+  sy_term_list_edit_read(&cfg, choices, 20);
 
   return 0;
 }
