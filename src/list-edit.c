@@ -16,7 +16,7 @@
   })
 
 static void print_list(sy_list_edit_t *le, char **choices, size_t len,
-                       int index, sy_array_t *selected) {
+                       int index, sy_array_t *selected, int offset) {
   sy_buffer_t *buf = sy_buffer_alloc();
 
   int row = le->row;
@@ -26,9 +26,11 @@ static void print_list(sy_list_edit_t *le, char **choices, size_t len,
     sy_term_cursor_buf_pos_set(buf, row + i, le->col);
     sy_term_buf_erase_line(buf);
     if (le->max_select > 1) {
-      sy_buffer_append_char(buf, sy_array_indexof(selected, i) != -1
+
+      sy_buffer_append_char(buf, sy_array_indexof(selected, i + offset) != -1
                                      ? le->selected
                                      : le->unselected);
+      sy_buffer_append_char(buf, ' ');
     }
     if (i == index) {
       sy_term_color_appendf(buf, le->highlight, "%s\n", choices[i]);
@@ -76,10 +78,9 @@ static bool remove_value(int *values, int len, int val) {
 static int compare(void *lh, void *rh) {
   int l = (int)lh;
   int r = (int)rh;
-  // printf("compare %i %i\n", l, r);
-  if (l > r)
+  if (l < r)
     return -1;
-  else if (l < r)
+  else if (l > r)
     return 1;
   return 0;
 }
@@ -107,7 +108,7 @@ size_t sy_term_list_edit_read(sy_list_edit_t *le, char **choices, size_t len) {
 
   sy_array_t *sel_idx = sy_array_new(compare);
 
-  print_list(le, choices, bh, index, sel_idx);
+  print_list(le, choices, bh, index, sel_idx, offset);
 
   if (bh + le->row > rows) {
     le->row -= (bh + le->row) - rows;
@@ -131,7 +132,7 @@ size_t sy_term_list_edit_read(sy_list_edit_t *le, char **choices, size_t len) {
           break;
         }
       }
-      print_list(le, choices + offset, bh, ++index, sel_idx);
+      print_list(le, choices + offset, bh, ++index, sel_idx, offset);
     } break;
     case SY_ARROW_UP:
       if (index == 0) {
@@ -145,27 +146,27 @@ size_t sy_term_list_edit_read(sy_list_edit_t *le, char **choices, size_t len) {
           break;
         }
       }
-      print_list(le, choices + offset, bh, --index, sel_idx);
+      print_list(le, choices + offset, bh, --index, sel_idx, offset);
       break;
     case SY_ENTER_KEY:
-      if (le->max_select > 1 && selections < le->min_select) {
+      if (le->max_select > 1 && sy_array_len(sel_idx) < le->min_select) {
         break;
       }
       goto end;
     case ' ': {
       if (le->max_select < 2) {
-
         break;
       }
 
       size_t idx = sy_array_indexof(sel_idx, index + offset);
       if (idx != -1)
         sy_array_remove_index(sel_idx, idx);
-      else
+      else {
+        if (le->max_select <= sy_array_len(sel_idx))
+          break;
         sy_array_append(sel_idx, index + offset);
-
-      // sy_array_indexof(sel_idx, index + offset);
-      print_list(le, choices + offset, bh, index, sel_idx);
+      }
+      print_list(le, choices + offset, bh, index, sel_idx, offset);
     }
     }
   }
