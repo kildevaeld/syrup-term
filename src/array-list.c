@@ -34,6 +34,19 @@ sy_array_t *sy_array_new(sy_array_comparator_fn fn) {
   return a;
 }
 
+void sy_array_foreach(sy_array_t *a, sy_array_iterate_fn fn) {
+  for (size_t i = 0; i < a->len; i++) {
+    fn(a->ptr[i], i);
+  }
+}
+
+void sy_array_free(sy_array_t *a) {
+  if (!a)
+    return;
+  free(a->ptr);
+  free(a);
+}
+
 void sy_array_append(sy_array_t *a, void *item) {
   if (!alloc_atleast(a, a->len + 1))
     return;
@@ -57,3 +70,7 @@ bool sy_array_remove_index(sy_array_t *a, int i) {
 }
 
 size_t sy_array_len(sy_array_t *a) { return a->len; }
+
+void sy_array_sort(sy_array_t *a, size_t isize) {
+  qsort(a, a->len, isize, a->comp);
+}

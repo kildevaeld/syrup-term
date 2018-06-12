@@ -94,20 +94,23 @@ int main() {
 
   sy_list_edit_t cfg;
 
-  char *choices[20];
+  char *choices[21];
   sy_buffer_t *buf = sy_buffer_alloc();
   for (int i = 0; i < 20; i++) {
     sy_buffer_clear(buf);
     sy_buffer_utf8_appendf(buf, "item %i", i);
     choices[i] = sy_buffer_string(buf);
   }
+  choices[20] = "Abba";
   sy_term_list_edit_init(&cfg);
+  cfg.col = 10;
   cfg.highlight = SY_MAGENTA;
   cfg.selected = 'v';
   cfg.unselected = 'x';
-  cfg.max_select = 2;
+  cfg.max_select = 1;
   cfg.min_select = 1;
-  sy_term_list_edit_read(&cfg, choices, 20);
+  cfg.clear = true;
+  sy_term_list_edit_read(&cfg, choices, 21);
 
   return 0;
 }

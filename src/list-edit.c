@@ -1,6 +1,7 @@
 #include <syrup/array-list.h>
 #include <syrup/list-edit.h>
 #include <syrup/term.h>
+
 #define max(a, b)                                                              \
   ({                                                                           \
     __typeof__(a) _a = (a);                                                    \
@@ -53,28 +54,6 @@ void sy_term_list_edit_init(sy_list_edit_t *le) {
   le->col = col;
 }
 
-static bool has_value(int *values, int len, int val) {
-  for (int i = 0; i < len; i++) {
-    if (values[i] == val)
-      return true;
-  }
-  return false;
-}
-
-static bool remove_value(int *values, int len, int val) {
-  for (int i = 0; i < len; i++) {
-    if (values[i] == val) {
-      if (i == 0) {
-        memcpy(values, values + 1, len - 1);
-      } else {
-        // memcpy()
-      }
-      // memcpy(values, )
-    }
-  }
-  return false;
-}
-
 static int compare(void *lh, void *rh) {
   int l = (int)lh;
   int r = (int)rh;
@@ -83,6 +62,7 @@ static int compare(void *lh, void *rh) {
   else if (l > r)
     return 1;
   return 0;
+  // return (*(int *)lh - *(int *)rh);
 }
 
 size_t sy_term_list_edit_read(sy_list_edit_t *le, char **choices, size_t len) {
