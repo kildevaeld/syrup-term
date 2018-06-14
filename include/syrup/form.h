@@ -4,6 +4,7 @@
 #include <string.h>
 #include <syrup/colors.h>
 #include <syrup/edit.h>
+#include <syrup/list-edit.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,10 +43,10 @@ typedef struct sy_term_form_select_cfg {
   int max_selected;
   char *selected;
   char *unselected;
-}
+  int max_height;
+} sy_term_form_select_cfg;
 
-char *
-sy_term_form_input(sy_term_form_input_cfg *cfg);
+char *sy_term_form_input(sy_term_form_input_cfg *cfg);
 bool sy_term_form_confirm(sy_term_form_confirm_cfg *cfg);
 sy_list_edit_res_t *sy_term_form_select(sy_term_form_select_cfg *cfg,
                                         char **choices, size_t len);

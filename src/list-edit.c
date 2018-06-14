@@ -18,9 +18,10 @@ static void print_list(sy_list_edit_t *le, char **choices, size_t len,
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wint-conversion"
-      sy_buffer_append_str(buf, sy_array_indexof(selected, (i + offset)) != -1
-                                    ? le->selected
-                                    : le->unselected);
+      sy_term_color_append(buf, i == index ? le->highlight : 0,
+                           sy_array_indexof(selected, (i + offset)) != -1
+                               ? le->selected
+                               : le->unselected);
 #pragma clang diagnostic pop
 
       sy_buffer_append_char(buf, ' ');
@@ -183,7 +184,7 @@ end:
     sy_term_buf_erase_current_line(buffer);
     sy_term_cursor_buf_pos_set(buffer, le->row + (--bh), le->col);
   }
-
+  sy_term_cursor_buf_pos_set(buffer, le->row, le->col);
   sy_buffer_write(buffer, STDOUT_FILENO);
   sy_term_cursor_show();
 

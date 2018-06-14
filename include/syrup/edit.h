@@ -10,6 +10,7 @@ typedef struct sy_term_style_t {
   sy_term_attr_t input;
   sy_term_attr_t value;
   sy_term_attr_t muted;
+  sy_term_attr_t highlight;
 } sy_term_style_t;
 
 sy_term_style_t default_style;

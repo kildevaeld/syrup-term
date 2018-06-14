@@ -76,7 +76,7 @@ int main() {
   sy_term_form_confirm(&style, "Yes", false);
   sy_term_form_list(&style, "Hello:", choices, 2);*/
 
-  sy_term_style_t style = {.normal = SY_WHITE,
+  sy_term_style_t style = {.normal = SY_BOLD | SY_HIGHDENS,
                            .input = SY_YELLOW,
                            .value = SY_CYAN | SY_HIGHDENS,
                            .muted = SY_GREEN};
@@ -146,7 +146,7 @@ int main() {
 
   sy_array_t *choices = sy_array_new((sy_array_comparator_fn)strcmp);
   sy_buffer_t *buf = sy_buffer_alloc();
-  for (int i = 0; i < 40; i++) {
+  for (int i = 0; i < 100; i++) {
     sy_buffer_clear(buf);
     sy_buffer_utf8_appendf(buf, "item %i", i);
     // choices[i] = sy_buffer_string(buf);
@@ -158,8 +158,20 @@ int main() {
   sy_array_append(choices, strdup("Abbacadabra"));
   sy_array_sort(choices);
 
-  sy_term_form_select_cfg cfg = {
-      .msg = "Hello", .selected = "◉ ", .unselected = "◯ "};
+  sy_term_enable_raw_mode();
+  int row, col;
+  sy_term_cursor_pos_get(&row, &col);
+  sy_term_disable_raw_mode();
+  sy_term_form_select_cfg cfg = {.msg = "Hello",
+                                 .selected = "◉ ",
+                                 .unselected = "◯ ",
+                                 .row = row,
+                                 .col = col,
+                                 .max_selected = 2,
+                                 .max_height = 10,
+                                 .style = &style};
 
   sy_term_form_select(&cfg, sy_array_raw(choices), sy_array_len(choices));
+  sy_array_foreach(choices, free);
+  sy_array_free(choices);
 }
