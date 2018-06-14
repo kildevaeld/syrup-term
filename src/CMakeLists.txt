@@ -4,6 +4,7 @@ set(SOURCES
     colors.c
     #form.c
     input.c
+    list.c
     line-edit.c
     list-edit.c
     confirm.c

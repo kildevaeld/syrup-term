@@ -99,7 +99,7 @@ int main() {
 
   bool confirm = sy_term_form_confirm(&confirm_cfg);*/
 
-  sy_list_edit_t cfg;
+  /*sy_list_edit_t cfg;
 
   sy_array_t *choices = sy_array_new((sy_array_comparator_fn)strcmp);
   sy_buffer_t *buf = sy_buffer_alloc();
@@ -142,5 +142,24 @@ int main() {
   sy_array_foreach(choices, (sy_array_iterate_fn)free);
   sy_array_free(choices);
 
-  return 0;
+  return 0;*/
+
+  sy_array_t *choices = sy_array_new((sy_array_comparator_fn)strcmp);
+  sy_buffer_t *buf = sy_buffer_alloc();
+  for (int i = 0; i < 40; i++) {
+    sy_buffer_clear(buf);
+    sy_buffer_utf8_appendf(buf, "item %i", i);
+    // choices[i] = sy_buffer_string(buf);
+    sy_array_append(choices, sy_buffer_string(buf));
+  }
+
+  sy_buffer_free(buf);
+
+  sy_array_append(choices, strdup("Abbacadabra"));
+  sy_array_sort(choices);
+
+  sy_term_form_select_cfg cfg = {
+      .msg = "Hello", .selected = "◉ ", .unselected = "◯ "};
+
+  sy_term_form_select(&cfg, sy_array_raw(choices), sy_array_len(choices));
 }
