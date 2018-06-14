@@ -1,9 +1,10 @@
+#include <stdlib.h>
+#include <syrup/array-list.h>
 #include <syrup/buffer.h>
 #include <syrup/form.h>
 #include <syrup/line-edit.h>
 #include <syrup/list-edit.h>
 #include <syrup/term.h>
-
 #ifdef WIN32
 #include <windows.h>
 #elif _POSIX_C_SOURCE >= 199309L
@@ -26,6 +27,12 @@ void sleep_ms(int milliseconds) // cross-platform sleep function
 #else
   usleep(milliseconds * 1000);
 #endif
+}
+
+int cmpstr(const void *a, const void *b) {
+  const char *aa = (const char *)a;
+  const char *bb = (const char *)b;
+  return strcmp(aa, bb);
 }
 
 int main() {
@@ -94,23 +101,46 @@ int main() {
 
   sy_list_edit_t cfg;
 
-  char *choices[21];
+  sy_array_t *choices = sy_array_new((sy_array_comparator_fn)strcmp);
   sy_buffer_t *buf = sy_buffer_alloc();
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 40; i++) {
     sy_buffer_clear(buf);
     sy_buffer_utf8_appendf(buf, "item %i", i);
-    choices[i] = sy_buffer_string(buf);
+    // choices[i] = sy_buffer_string(buf);
+    sy_array_append(choices, sy_buffer_string(buf));
   }
-  choices[20] = "Abba";
+
+  sy_buffer_free(buf);
+
+  sy_array_append(choices, strdup("Abbacadabra"));
+  sy_array_sort(choices);
+  // choices[20] = "Abba";
   sy_term_list_edit_init(&cfg);
   cfg.col = 10;
   cfg.highlight = SY_MAGENTA;
-  cfg.selected = 'v';
-  cfg.unselected = 'x';
-  cfg.max_select = 1;
+  cfg.selected = "◉ ";
+  cfg.unselected = "◯ ";
+  cfg.max_select = 2;
   cfg.min_select = 1;
-  cfg.clear = true;
-  sy_term_list_edit_read(&cfg, choices, 21);
+
+  sy_list_edit_res_t *res = sy_term_list_edit_read(
+      &cfg, (char **)sy_array_raw(choices), sy_array_len(choices));
+
+  if (res) {
+    printf("selected: ");
+    for (int i = 0; i < res->len; i++) {
+      printf("%s", sy_array_get(choices, res->indexes[i]));
+      if (i == res->len - 1)
+        printf("\n");
+      else
+        printf(", ");
+    }
+  }
+
+  sy_term_list_res_free(res);
+
+  sy_array_foreach(choices, (sy_array_iterate_fn)free);
+  sy_array_free(choices);
 
   return 0;
 }

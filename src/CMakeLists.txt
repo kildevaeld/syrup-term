@@ -2,12 +2,13 @@
 set(SOURCES
     term.c
     colors.c
-    form.c
+    #form.c
     input.c
     line-edit.c
     list-edit.c
     confirm.c
     array-list.c
+    private.c
 )
 
 add_library(syrup-term ${SOURCES})

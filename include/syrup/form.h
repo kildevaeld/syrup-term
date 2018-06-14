@@ -41,15 +41,15 @@ typedef struct sy_term_form_confirm_cfg {
 } sy_term_form_confirm_cfg;
 
 char *sy_term_form_input(sy_term_form_input_cfg *cfg);
-char *sy_term_form_confirm(sy_term_form_confirm_cfg *cfg);
+bool sy_term_form_confirm(sy_term_form_confirm_cfg *cfg);
 
-size_t sy_term_form_list(sy_term_style_t *style, const char *msg,
-                         const char **choices, size_t size);
+// size_t sy_term_form_list(sy_term_style_t *style, const char *msg,
+//                         const char **choices, size_t size);
 // bool sy_term_form_confirm(sy_term_style_t *style, const char *msg, bool
 // clear);
-char *sy_term_form_prompt(sy_term_style_t *style, const char *msg);
-char *sy_term_form_password(sy_term_style_t *style, const char *msg,
-                            const char *sub);
+// char *sy_term_form_prompt(sy_term_style_t *style, const char *msg);
+// char *sy_term_form_password(sy_term_style_t *style, const char *msg,
+//                            const char *sub);
 
 #ifdef __cplusplus
 }

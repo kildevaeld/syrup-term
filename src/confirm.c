@@ -4,7 +4,7 @@
 #include <syrup/form.h>
 #include <syrup/term.h>
 
-char *sy_term_form_confirm(sy_term_form_confirm_cfg *cfg) {
+bool sy_term_form_confirm(sy_term_form_confirm_cfg *cfg) {
   sy_term_enable_raw_mode();
 
   if (!cfg->style)
@@ -19,7 +19,7 @@ char *sy_term_form_confirm(sy_term_form_confirm_cfg *cfg) {
 
   sy_term_color_append(buf, cfg->style->normal, cfg->msg);
 
-  sy_buffer_append(buf, "[y/n]: ", 8);
+  sy_buffer_append(buf, (const unsigned char *)"[y/n]: ", 8);
 
   sy_buffer_write(buf, STDOUT_FILENO);
 

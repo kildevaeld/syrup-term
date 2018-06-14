@@ -1,3 +1,4 @@
+#include "private.h"
 #include <string.h>
 #include <syrup/line-edit.h>
 #include <syrup/term.h>
@@ -47,6 +48,8 @@ char *sy_term_line_edit_read(sy_line_edit_t *le, char *out, size_t maxlen) {
 
   while (true) {
     int key = sy_term_read_key();
+
+    handle_terminal_signals(key);
 
     switch (key) {
     case SY_CTRL_KEY('c'):
@@ -127,7 +130,7 @@ end:
   }
 
   if (out) {
-    sy_buffer_copy(buffer, out);
+    sy_buffer_copy(buffer, (unsigned char *)out);
     out[sy_buffer_len(buffer)] = '\0';
     sy_buffer_free(buffer);
     return out;

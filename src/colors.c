@@ -1,4 +1,6 @@
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <syrup/colors.h>
 
 void sy_term_color(sy_buffer_t *buffer, sy_term_attr_t c) {

@@ -1,20 +1,8 @@
+#include "private.h"
+#include <string.h>
 #include <syrup/array-list.h>
 #include <syrup/list-edit.h>
 #include <syrup/term.h>
-
-#define max(a, b)                                                              \
-  ({                                                                           \
-    __typeof__(a) _a = (a);                                                    \
-    __typeof__(b) _b = (b);                                                    \
-    _a > _b ? _a : _b;                                                         \
-  })
-
-#define min(a, b)                                                              \
-  ({                                                                           \
-    __typeof__(a) _a = (a);                                                    \
-    __typeof__(b) _b = (b);                                                    \
-    _a < _b ? _a : _b;                                                         \
-  })
 
 static void print_list(sy_list_edit_t *le, char **choices, size_t len,
                        int index, sy_array_t *selected, int offset) {
@@ -28,10 +16,15 @@ static void print_list(sy_list_edit_t *le, char **choices, size_t len,
     sy_term_buf_erase_line(buf);
     if (le->max_select > 1) {
 
-      sy_buffer_append_char(buf, sy_array_indexof(selected, i + offset) != -1
-                                     ? le->selected
-                                     : le->unselected);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-conversion"
+      sy_buffer_append_str(buf, sy_array_indexof(selected, (i + offset)) != -1
+                                    ? le->selected
+                                    : le->unselected);
+#pragma clang diagnostic pop
+
       sy_buffer_append_char(buf, ' ');
+      // clang on
     }
     if (i == index) {
       sy_term_color_appendf(buf, le->highlight, "%s\n", choices[i]);
@@ -54,7 +47,7 @@ void sy_term_list_edit_init(sy_list_edit_t *le) {
   le->col = col;
 }
 
-static int compare(void *lh, void *rh) {
+static int compare(const void *lh, const void *rh) {
   int l = (int)lh;
   int r = (int)rh;
   if (l < r)
@@ -62,10 +55,32 @@ static int compare(void *lh, void *rh) {
   else if (l > r)
     return 1;
   return 0;
-  // return (*(int *)lh - *(int *)rh);
 }
 
-size_t sy_term_list_edit_read(sy_list_edit_t *le, char **choices, size_t len) {
+static sy_list_edit_res_t *return_result(sy_array_t *a) {
+  int *i = malloc(sizeof(int) * sy_array_len(a));
+  sy_list_edit_res_t *res = NULL;
+  if (!i) {
+    goto end;
+  }
+  for (int idx = 0; idx < sy_array_len(a); idx++) {
+    i[idx] = (int)sy_array_get(a, idx);
+  }
+  res = malloc(sizeof(sy_list_edit_res_t));
+  if (!res) {
+    free(i);
+    goto end;
+  }
+  res->len = sy_array_len(a);
+  res->indexes = i;
+
+end:
+  sy_array_free(a);
+  return res;
+}
+
+sy_list_edit_res_t *sy_term_list_edit_read(sy_list_edit_t *le, char **choices,
+                                           size_t len) {
   sy_buffer_t *buffer = sy_buffer_alloc();
 
   sy_term_enable_raw_mode();
@@ -84,7 +99,7 @@ size_t sy_term_list_edit_read(sy_list_edit_t *le, char **choices, size_t len) {
 
   int orow, ocol;
   sy_term_cursor_pos_get(&orow, &ocol);
-  int bh = min(max_height, len);
+  int bh = sy_min(max_height, len);
 
   sy_array_t *sel_idx = sy_array_new(compare);
 
@@ -99,6 +114,9 @@ size_t sy_term_list_edit_read(sy_list_edit_t *le, char **choices, size_t len) {
 
   while (1) {
     int key = sy_term_read_key();
+
+    handle_terminal_signals(key);
+
     switch (key) {
     case SY_ARROW_DOWN: {
       if (index == bh - 1) {
@@ -138,13 +156,19 @@ size_t sy_term_list_edit_read(sy_list_edit_t *le, char **choices, size_t len) {
         break;
       }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-conversion"
       size_t idx = sy_array_indexof(sel_idx, index + offset);
+#pragma clang diagnostic pop
       if (idx != -1)
         sy_array_remove_index(sel_idx, idx);
       else {
         if (le->max_select <= sy_array_len(sel_idx))
           break;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-conversion"
         sy_array_append(sel_idx, index + offset);
+#pragma clang diagnostic pop
       }
       print_list(le, choices + offset, bh, index, sel_idx, offset);
     }
@@ -160,12 +184,15 @@ end:
     sy_term_cursor_buf_pos_set(buffer, le->row + (--bh), le->col);
   }
 
-  if (!le->clear) {
-    sy_buffer_append_str(buffer, choices[index + offset]);
-  }
-
   sy_buffer_write(buffer, STDOUT_FILENO);
   sy_term_cursor_show();
 
-  return index + offset;
+  return return_result(sel_idx);
+}
+
+void sy_term_list_res_free(sy_list_edit_res_t *res) {
+  if (!res)
+    return;
+  free(res->indexes);
+  free(res);
 }

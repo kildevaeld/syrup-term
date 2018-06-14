@@ -25,7 +25,7 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
     sy_term_color_appendf(buf, cfg->style->muted, " (%s)", cfg->defaults);
   }
 
-  sy_buffer_append(buf, ": ", 2);
+  sy_buffer_append(buf, (const unsigned char *)": ", 2);
 
   sy_buffer_write(buf, STDOUT_FILENO);
 
@@ -51,6 +51,7 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
   if (!string && cfg->defaults == NULL) {
     goto end;
   } else if (!string && cfg->defaults) {
+    // Okay no string - apply default
     size_t len = strlen(cfg->defaults);
     string = malloc(sizeof(char) * (len + 1));
     if (!string)
@@ -74,7 +75,7 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
     if (cfg->echo) {
       sy_term_color_appendf(buf, cfg->style->value, "%s\n\r", string);
     } else {
-      sy_buffer_append(buf, "\n\r", 2);
+      sy_buffer_append(buf, (const unsigned char *)"\n\r", 2);
     }
   }
 
@@ -82,7 +83,6 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
 
 end:
   sy_buffer_free(buf);
-
   sy_term_disable_raw_mode();
   return string;
 }

@@ -26,13 +26,19 @@ struct termios orig_termios;
 bool sy_term_disable_raw_mode() {
   bool ret = false;
   if (_refcount == 1) {
+    // sy_term_cursor_show();
     ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &T.orig_termios) == -1;
-    // printf("disable\n");
+
   } else if (_refcount == 0) {
     return true;
   }
   _refcount--;
   return ret;
+}
+
+static void on_exit() {
+  _refcount = 1;
+  sy_term_disable_raw_mode();
 }
 
 bool sy_term_enable_raw_mode() {
@@ -42,13 +48,14 @@ bool sy_term_enable_raw_mode() {
   }
   if (tcgetattr(STDIN_FILENO, &T.orig_termios) == -1)
     return false;
-  atexit((void (*)(void))sy_term_disable_raw_mode);
+  // atexit((void (*)(void))sy_term_disable_raw_mode);
+  atexit(on_exit);
   struct termios raw = T.orig_termios;
   raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
   raw.c_oflag &= ~(OPOST);
   raw.c_cflag |= (CS8);
-  // raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN);
+  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+  // raw.c_lflag &= ~(ECHO | ICANON | IEXTEN);
   raw.c_cc[VMIN] = 0;
   raw.c_cc[VTIME] = 1;
   // printf("enable\n");

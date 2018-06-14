@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <syrup/array-list.h>
+
 struct sy_array_s {
   void **ptr;
   size_t len;
@@ -9,12 +10,14 @@ struct sy_array_s {
   sy_array_comparator_fn comp;
 };
 
+#define SY_ARRAY_LIST_BLOCK_SIZE 10
+
 static bool alloc_atleast(sy_array_t *str, size_t len) {
   if (str->allocs > len)
     return true;
-  int i = ceil((double)len / (double)64);
-  int nsize = i * 64;
-  unsigned char *data = realloc(str->ptr, sizeof(void **) * nsize);
+  int i = ceil((double)len / (double)SY_ARRAY_LIST_BLOCK_SIZE);
+  int nsize = i * SY_ARRAY_LIST_BLOCK_SIZE;
+  void **data = realloc(str->ptr, sizeof(void **) * nsize);
 
   if (!data) {
     return false;
@@ -28,7 +31,7 @@ static bool alloc_atleast(sy_array_t *str, size_t len) {
 sy_array_t *sy_array_new(sy_array_comparator_fn fn) {
   sy_array_t *a = malloc(sizeof(sy_array_t));
   a->len = 0;
-  a->allocs = 1;
+  a->allocs = SY_ARRAY_LIST_BLOCK_SIZE;
   a->comp = fn;
   a->ptr = malloc(sizeof(void **) * a->allocs);
   return a;
@@ -69,10 +72,28 @@ bool sy_array_remove_index(sy_array_t *a, int i) {
   return true;
 }
 
+void *sy_array_get(sy_array_t *a, int index) {
+  if (index >= a->len) {
+    return NULL;
+  }
+  return a->ptr[index];
+}
+
 size_t sy_array_len(sy_array_t *a) { return a->len; }
 
-void sy_array_sort(sy_array_t *a, size_t isize) {
-  qsort(a, a->len, isize, a->comp);
+void sy_array_sort(sy_array_t *a) {
+  // Bubble sort for now
+  void *tmp;
+  size_t i = 0, j;
+  for (; i < a->len; i++) {
+    for (j = 0; j < a->len; j++) {
+      if (a->comp(a->ptr[i], a->ptr[j]) < 0) {
+        tmp = a->ptr[i];
+        a->ptr[i] = a->ptr[j];
+        a->ptr[j] = tmp;
+      }
+    }
+  }
 }
 
 void **sy_array_raw(sy_array_t *a) { return a->ptr; }
