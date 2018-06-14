@@ -74,3 +74,5 @@ size_t sy_array_len(sy_array_t *a) { return a->len; }
 void sy_array_sort(sy_array_t *a, size_t isize) {
   qsort(a, a->len, isize, a->comp);
 }
+
+void **sy_array_raw(sy_array_t *a) { return a->ptr; }
