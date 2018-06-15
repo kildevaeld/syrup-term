@@ -1,4 +1,5 @@
 #include "private.h"
+#include <stdlib.h>
 #include <string.h>
 #include <syrup/line-edit.h>
 #include <syrup/term.h>

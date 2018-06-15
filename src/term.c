@@ -143,6 +143,8 @@ int sy_term_read_key() {
       switch (c) {
       case '\r':
         return SY_ENTER_KEY;
+      case ' ':
+        return SY_SPACE_KEY;
       }
     }
     return c;

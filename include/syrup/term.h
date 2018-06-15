@@ -22,7 +22,7 @@ enum type_term_control_keys_t {
   SY_END_KEY,
   SY_PAGE_UP,
   SY_PAGE_DOWN,
-
+  SY_SPACE_KEY,
   SY_UNICODE_4C,
   SY_UNICODE_3C,
   SY_UNICODE_2C

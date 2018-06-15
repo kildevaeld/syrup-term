@@ -23,9 +23,7 @@ static void print_list(sy_list_edit_t *le, char **choices, size_t len,
                                ? le->selected
                                : le->unselected);
 #pragma clang diagnostic pop
-
       sy_buffer_append_char(buf, ' ');
-      // clang on
     }
     if (i == index) {
       sy_term_color_appendf(buf, le->highlight, "%s\n", choices[i]);
@@ -177,7 +175,6 @@ sy_list_edit_res_t *sy_term_list_edit_read(sy_list_edit_t *le, char **choices,
   }
 
 end:
-
   sy_buffer_clear(buffer);
   sy_term_cursor_buf_pos_set(buffer, le->row + bh, le->col);
   while (bh) {

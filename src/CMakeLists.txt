@@ -2,7 +2,6 @@
 set(SOURCES
     term.c
     colors.c
-    #form.c
     input.c
     select.c
     line-edit.c
