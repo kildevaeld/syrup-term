@@ -3,6 +3,8 @@
 #include <syrup/array-list.h>
 #include <syrup/list-edit.h>
 #include <syrup/term.h>
+#include <stdlib.h>
+
 
 static void print_list(sy_list_edit_t *le, char **choices, size_t len,
                        int index, sy_array_t *selected, int offset) {

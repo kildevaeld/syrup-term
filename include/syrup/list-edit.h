@@ -4,6 +4,10 @@
 #include <syrup/colors.h>
 #include <syrup/edit.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sy_list_edit_t {
   SY_EDITOR_FIELDS
   int max_height;
@@ -24,3 +28,7 @@ void sy_term_list_edit_init(sy_list_edit_t *le);
 sy_list_edit_res_t *sy_term_list_edit_read(sy_list_edit_t *le, char **choices,
                                            size_t len);
 void sy_term_list_res_free(sy_list_edit_res_t *res);
+
+#ifdef __cplusplus
+}
+#endif

@@ -7,9 +7,10 @@ option(SYRUP_BUILD_EXAMPLE "build example" off)
 
 find_package(syrup-buffer REQUIRED)
 
+include_directories(include ${SYRUP_BUFFER_INCLUDE_DIRS})
+
 add_subdirectory(src)
 
-include_directories(include ${SYRUP_BUFFER_INCLUDE_DIRS})
 
 if(SYRUP_BUILD_EXAMPLE)
     add_subdirectory(example)

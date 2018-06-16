@@ -2,6 +2,10 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sy_array_s sy_array_t;
 
 typedef int (*sy_array_comparator_fn)(const void *lh, const void *rh);
@@ -17,3 +21,7 @@ bool sy_array_remove_index(sy_array_t *, int i);
 size_t sy_array_len(sy_array_t *);
 void sy_array_sort(sy_array_t *);
 void **sy_array_raw(sy_array_t *);
+
+#ifdef __cplusplus
+}
+#endif
