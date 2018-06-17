@@ -19,6 +19,10 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
   int row, col;
   sy_term_cursor_pos_get(&row, &col);
 
+  if (row != cfg->row || col != cfg->col) {
+    sy_term_cursor_buf_pos_set(buf, cfg->row, cfg->col);
+  }
+
   sy_term_color_append(buf, cfg->style->normal, cfg->msg);
 
   if (cfg->defaults) {
@@ -33,7 +37,8 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
       .clear = true,
       .echo = cfg->echo,
       .row = row,
-      .col = col + msgl + (cfg->defaults ? strlen(cfg->defaults) + 3 : 0) + 2,
+      .col =
+          cfg->col + msgl + (cfg->defaults ? strlen(cfg->defaults) + 3 : 0) + 2,
       .style = cfg->style->input};
 
   char *string = NULL;
@@ -60,7 +65,7 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
     string[len] = '\0';
   }
 
-  sy_term_cursor_pos_set(row, col);
+  sy_term_cursor_pos_set(cfg->row, cfg->col);
 
   if (cfg->clear) {
     sy_buffer_clear(buf);

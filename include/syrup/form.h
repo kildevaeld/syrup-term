@@ -10,11 +10,9 @@
 extern "C" {
 #endif
 
-// struct sy_term_form_field_cfg {
-//   char *msg;
-//   sy_term_style_t *style;
-//   bool required;
-// };
+struct sy_term_form_field_cfg {
+  SY_FORM_FIELD_FIELDS
+};
 
 typedef struct sy_term_form_input_cfg {
   SY_FORM_FIELD_FIELDS
