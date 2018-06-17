@@ -167,7 +167,7 @@ int main() {
                                  .unselected = "◯ ",
                                  .row = row,
                                  .col = col,
-                                 .max_selected = 2,
+                                 .max_selected = 1,
                                  .max_height = 10,
                                  .style = &style};
 

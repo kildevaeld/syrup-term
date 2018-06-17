@@ -1,10 +1,9 @@
 #include "private.h"
+#include <stdlib.h>
 #include <string.h>
 #include <syrup/array-list.h>
 #include <syrup/list-edit.h>
 #include <syrup/term.h>
-#include <stdlib.h>
-
 
 static void print_list(sy_list_edit_t *le, char **choices, size_t len,
                        int index, sy_array_t *selected, int offset) {
@@ -80,6 +79,23 @@ end:
   return res;
 }
 
+static void toggle_index(sy_array_t *sel_idx, int i, int max_select) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-conversion"
+  size_t idx = sy_array_indexof(sel_idx, i);
+#pragma clang diagnostic pop
+  if (idx != -1)
+    sy_array_remove_index(sel_idx, idx);
+  else {
+    if (max_select <= sy_array_len(sel_idx))
+      return;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-conversion"
+    sy_array_append(sel_idx, i);
+#pragma clang diagnostic pop
+  }
+}
+
 sy_list_edit_res_t *sy_term_list_edit_read(sy_list_edit_t *le, char **choices,
                                            size_t len) {
   sy_buffer_t *buffer = sy_buffer_alloc();
@@ -151,26 +167,34 @@ sy_list_edit_res_t *sy_term_list_edit_read(sy_list_edit_t *le, char **choices,
       if (le->max_select > 1 && sy_array_len(sel_idx) < le->min_select) {
         break;
       }
-      goto end;
-    case ' ': {
-      if (le->max_select < 2) {
-        break;
-      }
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wint-conversion"
-      size_t idx = sy_array_indexof(sel_idx, index + offset);
-#pragma clang diagnostic pop
-      if (idx != -1)
-        sy_array_remove_index(sel_idx, idx);
-      else {
-        if (le->max_select <= sy_array_len(sel_idx))
-          break;
+      if (le->max_select <= 1) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wint-conversion"
         sy_array_append(sel_idx, index + offset);
 #pragma clang diagnostic pop
       }
+
+      goto end;
+    case ' ': {
+      if (le->max_select < 2) {
+        break;
+      }
+      /*
+      #pragma clang diagnostic push
+      #pragma clang diagnostic ignored "-Wint-conversion"
+            size_t idx = sy_array_indexof(sel_idx, index + offset);
+      #pragma clang diagnostic pop
+            if (idx != -1)
+              sy_array_remove_index(sel_idx, idx);
+            else {
+              if (le->max_select <= sy_array_len(sel_idx))
+                break;
+      #pragma clang diagnostic push
+      #pragma clang diagnostic ignored "-Wint-conversion"
+              sy_array_append(sel_idx, index + offset);
+      #pragma clang diagnostic pop
+            }*/
+      toggle_index(sel_idx, index + offset, le->max_select);
       print_list(le, choices + offset, bh, index, sel_idx, offset);
     }
     }

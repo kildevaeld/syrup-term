@@ -17,7 +17,7 @@ static bool alloc_atleast(sy_array_t *str, size_t len) {
     return true;
   int i = ceil((double)len / (double)SY_ARRAY_LIST_BLOCK_SIZE);
   int nsize = i * SY_ARRAY_LIST_BLOCK_SIZE;
-  void **data = realloc(str->ptr, sizeof(void **) * nsize);
+  void **data = realloc(str->ptr, sizeof(void *) * nsize);
 
   if (!data) {
     return false;
@@ -33,7 +33,7 @@ sy_array_t *sy_array_new(sy_array_comparator_fn fn) {
   a->len = 0;
   a->allocs = SY_ARRAY_LIST_BLOCK_SIZE;
   a->comp = fn;
-  a->ptr = malloc(sizeof(void **) * a->allocs);
+  a->ptr = malloc(sizeof(void *) * a->allocs);
   return a;
 }
 
@@ -67,7 +67,7 @@ bool sy_array_remove_index(sy_array_t *a, int i) {
   if (i >= a->len)
     return false;
   else if (i < a->len - 1)
-    memcpy(a->ptr + i, a->ptr + i + 1, a->len - i);
+    memmove(a->ptr + i, a->ptr + i + 1, a->len - i);
   a->len--;
   return true;
 }
