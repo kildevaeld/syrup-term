@@ -65,6 +65,8 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
     string[len] = '\0';
   }
 
+end:
+
   sy_term_cursor_pos_set(cfg->row, cfg->col);
 
   if (cfg->clear) {
@@ -77,7 +79,7 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
       sy_term_color_appendf(buf, cfg->style->normal, "%s: ", cfg->msg);
     }
 
-    if (cfg->echo) {
+    if (cfg->echo && string) {
       sy_term_color_appendf(buf, cfg->style->value, "%s\n\r", string);
     } else {
       sy_buffer_append(buf, (const unsigned char *)"\n\r", 2);
@@ -86,8 +88,8 @@ char *sy_term_form_input(sy_term_form_input_cfg *cfg) {
 
   sy_buffer_write(buf, STDOUT_FILENO);
 
-end:
   sy_buffer_free(buf);
   sy_term_disable_raw_mode();
+
   return string;
 }

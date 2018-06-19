@@ -54,7 +54,7 @@ sy_list_edit_res_t *sy_term_form_select(sy_term_form_select_cfg *cfg,
       sy_term_color(buf, cfg->style->value);
     }
     for (int i = 0; i < res->len; i++) {
-      sy_buffer_append_str(buf, choices[i]);
+      sy_buffer_append_str(buf, choices[res->indexes[i]]);
       if (i != res->len - 1) {
         sy_buffer_append(buf, (const unsigned char *)", ", 2);
       }
@@ -69,6 +69,7 @@ sy_list_edit_res_t *sy_term_form_select(sy_term_form_select_cfg *cfg,
 
 end:
   sy_buffer_free(buf);
+  sy_term_cursor_pos_set(ecfg.row + 1, col);
   sy_term_disable_raw_mode();
 
   return res;

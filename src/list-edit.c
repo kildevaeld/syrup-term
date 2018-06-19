@@ -211,6 +211,8 @@ end:
   sy_buffer_write(buffer, STDOUT_FILENO);
   sy_term_cursor_show();
 
+  sy_term_disable_raw_mode();
+
   return return_result(sel_idx);
 }
 

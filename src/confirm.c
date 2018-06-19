@@ -54,6 +54,7 @@ end:
     sy_term_color_appendf(buf, cfg->style->value, "%s\n\r", ret ? "yes" : "no");
   }
   sy_buffer_write(buf, STDOUT_FILENO);
+  sy_term_disable_raw_mode();
   sy_buffer_free(buf);
 
   return ret;

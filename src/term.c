@@ -27,8 +27,9 @@ bool sy_term_disable_raw_mode() {
   bool ret = false;
   if (_refcount == 1) {
     // sy_term_cursor_show();
-    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &T.orig_termios) == -1;
 
+    ret = tcsetattr(STDIN_FILENO, TCSAFLUSH, &T.orig_termios) == -1;
+    // printf("DISABLE\n");
   } else if (_refcount == 0) {
     return true;
   }
@@ -37,7 +38,8 @@ bool sy_term_disable_raw_mode() {
 }
 
 static void on_exit() {
-  _refcount = 1;
+  if (_refcount > 0)
+    _refcount = 1;
   sy_term_disable_raw_mode();
 }
 
@@ -58,7 +60,6 @@ bool sy_term_enable_raw_mode() {
   // raw.c_lflag &= ~(ECHO | ICANON | IEXTEN);
   raw.c_cc[VMIN] = 0;
   raw.c_cc[VTIME] = 1;
-  // printf("enable\n");
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
     return false;
   _refcount++;
