@@ -202,6 +202,7 @@ sy_list_edit_res_t *sy_term_list_edit_read(sy_list_edit_t *le, char **choices,
 
 end:
   sy_buffer_clear(buffer);
+
   sy_term_cursor_buf_pos_set(buffer, le->row + bh, le->col);
   while (bh) {
     sy_term_buf_erase_current_line(buffer);
